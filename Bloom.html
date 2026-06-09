@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bloom</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@300;400;600&family=Satisfy&family=Josefin+Sans:wght@300;400;600&family=Nunito:wght@300;400;700&family=Italiana&family=Cinzel:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fdf6f0;--surface:#fff8f3;--card:#ffffff;--border:#f0e4d8;
+  --text:#2c1a0e;--muted:#8a6a55;--accent:#c8553d;--accent2:#7c4dbc;
+  --green:#3d8c5f;--pink:#d4567a;--soft:#f5e8df;
+  --font-head:'Playfair Display',serif;--font-body:'DM Sans',sans-serif;
+  --deco-opacity:0;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;transition:background .5s,color .4s}
+h1,h2,h3,.logo,.section-title,.blog-title,.profile-name,.community-name,.challenge-title{font-family:var(--font-head)}
+button{cursor:pointer;font-family:var(--font-body);border:none;outline:none}
+input,textarea,select{font-family:var(--font-body);outline:none;border:1.5px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 14px;width:100%;font-size:14px;transition:border .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+
+/* ====== THEME DECORATIONS ====== */
+#theme-deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.page,.nav{position:relative;z-index:1}
+
+/* NAV */
+.nav{background:var(--card);border-bottom:1.5px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:100}
+.logo{font-size:24px;color:var(--accent);font-style:italic;letter-spacing:-.5px}
+.nav-links{display:flex;gap:2px}
+.nav-btn{background:none;border:none;padding:8px 14px;border-radius:20px;font-size:13px;color:var(--muted);transition:all .2s;font-weight:500;font-family:var(--font-body)}
+.nav-btn.active,.nav-btn:hover{background:var(--soft);color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.settings-btn{background:var(--soft);border:1.5px solid var(--border);border-radius:12px;padding:8px 14px;font-size:13px;color:var(--muted);font-family:var(--font-body);transition:all .2s}
+.settings-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* PAGES */
+.page{display:none;max-width:920px;margin:0 auto;padding:28px 20px}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:22px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+
+/* BUTTONS */
+.btn-primary{background:var(--accent);color:#fff;border-radius:12px;padding:10px 22px;font-size:14px;font-weight:500;transition:all .2s;font-family:var(--font-body)}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.btn-secondary{background:var(--soft);color:var(--accent);border-radius:12px;padding:10px 22px;font-size:14px;font-weight:500;border:1.5px solid var(--border);transition:all .2s;font-family:var(--font-body)}
+.btn-secondary:hover{background:var(--border)}
+.btn-sm{padding:7px 16px;font-size:13px;border-radius:10px}
+
+/* SECTION */
+.section-title{font-size:22px;margin-bottom:6px}
+.section-sub{font-size:14px;color:var(--muted);margin-bottom:20px}
+.divider{height:1.5px;background:var(--border);margin:24px 0}
+
+/* TOGGLE */
+.toggle{display:flex;background:var(--soft);border-radius:12px;padding:3px;gap:3px;width:fit-content;margin-bottom:16px}
+.toggle-opt{padding:6px 16px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-weight:500;color:var(--muted);font-family:var(--font-body)}
+.toggle-opt.active{background:var(--card);color:var(--accent);box-shadow:0 1px 8px rgba(0,0,0,.1)}
+
+/* BLOGS */
+.blog-grid{display:grid;gap:16px}
+.blog-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:22px;transition:all .2s}
+.blog-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.blog-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.blog-tag{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+.tag-public{background:#e8f5e9;color:#2e7d32}
+.tag-private{background:#f3e5f5;color:#6a1b9a}
+.tag-dark{background:#1a1a2e;color:#c9b8ff}
+.tag-cottage{background:#f1f8e9;color:#33691e}
+.tag-pink{background:#fff0f5;color:#c02060}
+.tag-ocean{background:#e0f4ff;color:#0d6a8a}
+.blog-title{font-size:18px;margin-bottom:8px}
+.blog-excerpt{font-size:13px;color:var(--muted);line-height:1.7}
+.blog-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:8px}
+.like-btn{display:flex;align-items:center;gap:6px;background:var(--soft);border:1.5px solid var(--border);border-radius:10px;padding:6px 12px;font-size:13px;transition:all .2s;color:var(--muted);cursor:pointer;font-family:var(--font-body)}
+.like-btn:hover,.like-btn.liked{background:#fce4ec;border-color:#f48fb1;color:var(--pink)}
+.follow-btn{background:var(--accent2);color:#fff;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.follow-btn.following{background:var(--soft);color:var(--accent2);border:1.5px solid var(--accent2)}
+
+/* COMMUNITY */
+.community-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+.community-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s}
+.community-card:hover{border-color:var(--accent2);transform:translateY(-3px);box-shadow:0 6px 24px rgba(0,0,0,.1)}
+.community-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:12px}
+.community-name{font-size:16px;margin-bottom:6px}
+.challenge-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start;transition:all .2s}
+.challenge-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.challenge-badge{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:#f0e8ff}
+.challenge-info{flex:1}
+.challenge-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.progress-bar{background:var(--border);border-radius:10px;height:7px;margin-top:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--pink));transition:width .6s ease}
+.join-btn{background:var(--soft);color:var(--accent);border-radius:10px;padding:7px 16px;font-size:12px;font-weight:600;border:1.5px solid var(--border);white-space:nowrap;align-self:center;transition:all .2s;cursor:pointer;font-family:var(--font-body)}
+.join-btn:hover,.join-btn.joined{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* PROFILE */
+.profile-header{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:28px;display:flex;gap:28px;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap}
+.profile-info{flex:1;min-width:180px}
+.profile-name{font-size:26px;margin-bottom:4px}
+.profile-bio{font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.profile-stats{display:flex;gap:24px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-size:22px;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+
+/* FEED */
+.feed-item{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start}
+.feed-avatar-emoji{width:42px;height:42px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--border)}
+.feed-name{font-weight:600;font-size:14px}
+.feed-action{font-size:13px;color:var(--muted)}
+.feed-time{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:22px;padding:30px;width:92%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:22px;margin-bottom:22px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:7px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.modal-btns{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+
+/* SETTINGS MODAL */
+.settings-section{margin-bottom:28px}
+.settings-section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;padding-bottom:8px;border-bottom:1.5px solid var(--border)}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.theme-tile{border:2px solid var(--border);border-radius:14px;padding:12px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.theme-tile:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.theme-tile.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)22}
+.theme-tile-preview{height:40px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:18px;gap:4px}
+.theme-tile-name{font-size:12px;font-weight:600}
+.font-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.font-tile{border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .2s;text-align:center}
+.font-tile:hover{border-color:var(--accent)}
+.font-tile.active{border-color:var(--accent);background:var(--soft)}
+.font-tile-name{font-size:13px;font-weight:600}
+.font-tile-preview{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* GRATITUDE */
+.gratitude-area{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.gratitude-card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:22px}
+.streak-num{font-size:40px;color:var(--green);line-height:1}
+.write-area{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:22px;margin-bottom:20px}
+
+/* HOME GRID */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.home-tile{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px;cursor:pointer;transition:all .25s}
+.home-tile:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.1)}
+
+/* SWATCH */
+.swatch-row{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.swatch.active{border-color:var(--text);transform:scale(1.2)}
+
+/* ============================================================
+   THEMES
+   ============================================================ */
+
+/* --- DARK ACADEMIA --- */
+body.dark-academia{
+  --bg:#0d0b09;--surface:#161210;--card:#1e1a14;--border:#2e261c;
+  --text:#e8ddd0;--muted:#9a8a78;--soft:#1e1a14;
+  --accent:#c8a060;--accent2:#8060c0;--green:#5a8c60;--pink:#c06080;
+  background-color:#0d0b09;
+}
+body.dark-academia .nav{background:rgba(30,26,20,.96);border-color:#2e261c}
+body.dark-academia .logo{color:#c8a060}
+body.dark-academia .btn-primary{background:#c8a060;color:#0d0b09}
+
+/* --- COTTAGECORE --- */
+body.cottage{
+  --bg:#f0ead8;--surface:#faf6ec;--card:#fffdf5;--border:#d8caa8;
+  --text:#3a2e1a;--muted:#7a6848;--soft:#ede4cc;
+  --accent:#7a9e5f;--accent2:#c4806a;--green:#4a8c50;--pink:#c06878;
+  background-color:#f0ead8;
+}
+body.cottage .logo{color:#7a9e5f}
+body.cottage .btn-primary{background:#7a9e5f}
+
+/* --- Y2K --- */
+body.y2k{
+  --bg:#fff0fb;--surface:#fff5fc;--card:#fff;--border:#ffb0e8;
+  --text:#3a0038;--muted:#a050a0;--soft:#ffe0f8;
+  --accent:#e91e8c;--accent2:#7c4dbc;--green:#00c860;--pink:#ff1a6e;
+  background:linear-gradient(135deg,#fff0fb 0%,#f0eeff 50%,#fff8e0 100%);
+}
+body.y2k .logo{color:#e91e8c}
+body.y2k .btn-primary{background:linear-gradient(135deg,#e91e8c,#7c4dbc)}
+
+/* --- MINIMALIST --- */
+body.minimalist{
+  --bg:#f7f7f5;--surface:#fff;--card:#fff;--border:#e0e0dc;
+  --text:#1a1a1a;--muted:#888;--soft:#f0f0ee;
+  --accent:#1a1a1a;--accent2:#505050;--green:#3a7a3a;--pink:#c04060;
+  background-color:#f7f7f5;
+}
+body.minimalist .logo{font-style:normal;font-weight:300;letter-spacing:.12em;font-size:17px}
+body.minimalist .btn-primary{background:#1a1a1a}
+
+/* --- OCEAN --- */
+body.ocean{
+  --bg:#ddf0f8;--surface:#eaf6fc;--card:#fff;--border:#a8d8ec;
+  --text:#082430;--muted:#2a6070;--soft:#c8e8f4;
+  --accent:#0870a0;--accent2:#0aaa7a;--green:#1a9a5a;--pink:#d05070;
+  background:linear-gradient(180deg,#c0e8f8 0%,#ddf0f8 40%,#e8f8f0 100%);
+}
+body.ocean .logo{color:#0870a0}
+body.ocean .btn-primary{background:linear-gradient(135deg,#0870a0,#0aaa7a)}
+
+/* --- MIDNIGHT GLAM --- */
+body.midnight{
+  --bg:#060410;--surface:#0e0820;--card:#140c2a;--border:#281848;
+  --text:#f0e8ff;--muted:#9080c0;--soft:#140c2a;
+  --accent:#c060ff;--accent2:#ff60c0;--green:#60c8a0;--pink:#ff60c0;
+  background-color:#060410;
+}
+body.midnight .nav{background:rgba(20,12,42,.96);border-color:#281848}
+body.midnight .logo{color:#c060ff}
+body.midnight .btn-primary{background:linear-gradient(135deg,#c060ff,#ff60c0)}
+
+/* --- CHERRY BLOSSOM --- */
+body.cherry{
+  --bg:#fff4f7;--surface:#fff8fa;--card:#fff;--border:#ffc8d8;
+  --text:#3a0e20;--muted:#a06070;--soft:#ffe0ea;
+  --accent:#e03868;--accent2:#a838c0;--green:#5a9a50;--pink:#e03868;
+  background:linear-gradient(160deg,#fff4f7 0%,#ffeef5 60%,#fff8ec 100%);
+}
+body.cherry .logo{color:#e03868}
+body.cherry .btn-primary{background:linear-gradient(135deg,#e03868,#a838c0)}
+
+/* --- COQUETTE --- */
+body.coquette{
+  --bg:#fff0f3;--surface:#fff5f7;--card:#fff;--border:#ffc0cc;
+  --text:#3a1020;--muted:#b06070;--soft:#ffe4ec;
+  --accent:#e0507a;--accent2:#c060a0;--green:#7aaa60;--pink:#e0507a;
+  background:linear-gradient(160deg,#fff0f3 0%,#fff0f8 50%,#f8f0ff 100%);
+}
+body.coquette .logo{color:#e0507a;font-style:italic}
+body.coquette .btn-primary{background:linear-gradient(135deg,#e0507a,#c060a0)}
+
+/* --- FAIRYCORE --- */
+body.fairy{
+  --bg:#f4f0ff;--surface:#f8f5ff;--card:#fff;--border:#d8c8f8;
+  --text:#200a40;--muted:#8060a0;--soft:#ece0ff;
+  --accent:#8040d0;--accent2:#d040a0;--green:#50a870;--pink:#d040a0;
+  background:linear-gradient(150deg,#f4f0ff 0%,#fff0f8 50%,#f0fff4 100%);
+}
+body.fairy .logo{color:#8040d0}
+body.fairy .btn-primary{background:linear-gradient(135deg,#8040d0,#d040a0)}
+
+/* --- VINTAGE ACADEMIA --- */
+body.vintage{
+  --bg:#f5ede0;--surface:#faf3e8;--card:#fffbf2;--border:#d8c8a8;
+  --text:#2a1a08;--muted:#7a6040;--soft:#ede0c8;
+  --accent:#8a5020;--accent2:#a06840;--green:#4a7840;--pink:#a06060;
+  background-color:#f5ede0;
+  background-image:url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.04'%3E%3Ccircle cx='25' cy='25' r='3' fill='%238a5020'/%3E%3Ccircle cx='75' cy='75' r='3' fill='%238a5020'/%3E%3Ccircle cx='75' cy='25' r='3' fill='%238a5020'/%3E%3Ccircle cx='25' cy='75' r='3' fill='%238a5020'/%3E%3C/g%3E%3C/svg%3E");
+}
+body.vintage .logo{color:#8a5020;font-style:normal}
+body.vintage .btn-primary{background:#8a5020}
+
+/* --- SOLARPUNK --- */
+body.solar{
+  --bg:#f0f8e8;--surface:#f5fced;--card:#fff;--border:#b8e0a0;
+  --text:#0a2010;--muted:#3a6830;--soft:#d8f0c0;
+  --accent:#3a8830;--accent2:#c89020;--green:#3a8830;--pink:#c06050;
+  background:linear-gradient(160deg,#e8f8d8 0%,#f0f8e8 50%,#f8f8e0 100%);
+}
+body.solar .logo{color:#3a8830}
+body.solar .btn-primary{background:linear-gradient(135deg,#3a8830,#c89020)}
+
+/* --- DARK ROMANCE --- */
+body.darkromance{
+  --bg:#120810;--surface:#1c0e1a;--card:#241420;--border:#3c2038;
+  --text:#f0e0e8;--muted:#a07890;--soft:#1c0e1a;
+  --accent:#c84080;--accent2:#8040c0;--green:#60a870;--pink:#c84080;
+  background-color:#120810;
+}
+body.darkromance .nav{background:rgba(36,20,32,.96);border-color:#3c2038}
+body.darkromance .logo{color:#c84080}
+body.darkromance .btn-primary{background:linear-gradient(135deg,#c84080,#8040c0)}
+
+/* ====== ANIMATED DECORATIONS ====== */
+.deco-item{position:absolute;pointer-events:none;user-select:none;animation:float linear infinite}
+@keyframes float{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh) rotate(360deg);opacity:0}}
+@keyframes sway{0%,100%{transform:translateX(-20px) rotate(-5deg)}50%{transform:translateX(20px) rotate(5deg)}}
+@keyframes flicker{0%,100%{opacity:.9}40%{opacity:.5}60%{opacity:.8}80%{opacity:.4}}
+@keyframes wave{0%{transform:translateX(0) translateY(0)}25%{transform:translateX(-15px) translateY(-8px)}50%{transform:translateX(-30px) translateY(0)}75%{transform:translateX(-15px) translateY(8px)}100%{transform:translateX(0) translateY(0)}}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes drift{0%{transform:translateY(0) translateX(0)}50%{transform:translateY(-30px) translateX(15px)}100%{transform:translateY(0) translateX(0)}}
+@keyframes bloom{0%{transform:scale(.8) rotate(-10deg);opacity:0}50%{transform:scale(1.1) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:.7}}
+</style>
+</head>
+<body>
+
+<!-- THEME DECORATION LAYER -->
+<div id="theme-deco"></div>
+
+<nav class="nav">
+  <div class="logo">bloom ✿</div>
+  <div class="nav-links">
+    <button class="nav-btn active" data-page="home">Home</button>
+    <button class="nav-btn" data-page="journal">Journal</button>
+    <button class="nav-btn" data-page="blogs">Blogs</button>
+    <button class="nav-btn" data-page="community">Community</button>
+    <button class="nav-btn" data-page="profile">Profile</button>
+  </div>
+  <div class="nav-right">
+    <button class="settings-btn" id="open-settings-btn">⚙️ Settings</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="section-title" id="home-greeting">Good morning, Luna ✨</div>
+  <div class="section-sub">Welcome back to your space</div>
+  <div class="home-grid">
+    <div class="home-tile" id="home-journal"><div style="font-size:32px;margin-bottom:10px">🌱</div><div class="section-title" style="font-size:17px;margin-bottom:4px">Gratitude Journal</div><div style="font-size:13px;color:var(--muted)">Water your plant with daily gratitude</div></div>
+    <div class="home-tile" id="home-blogs"><div style="font-size:32px;margin-bottom:10px">✍️</div><div class="section-title" style="font-size:17px;margin-bottom:4px">My Blogs</div><div style="font-size:13px;color:var(--muted)">Share your story with the world</div></div>
+    <div class="home-tile" id="home-community"><div style="font-size:32px;margin-bottom:10px">🌸</div><div class="section-title" style="font-size:17px;margin-bottom:4px">Communities</div><div style="font-size:13px;color:var(--muted)">Find your people</div></div>
+    <div class="home-tile" id="home-profile"><div style="font-size:32px;margin-bottom:10px">👤</div><div class="section-title" style="font-size:17px;margin-bottom:4px">My Profile</div><div style="font-size:13px;color:var(--muted)">View your stats and entries</div></div>
+  </div>
+  <div class="section-title" style="font-size:19px;margin-bottom:14px">Recent from Friends</div>
+  <div id="feed-home"></div>
+</div>
+
+<!-- JOURNAL -->
+<div class="page" id="page-journal">
+  <div class="section-title">Gratitude Garden 🌿</div>
+  <div class="section-sub">Write every day and watch your garden grow</div>
+  <div class="gratitude-area">
+    <div class="gratitude-card" style="text-align:center">
+      <div style="font-weight:600;margin-bottom:14px;font-size:15px">Your Plant & Pet</div>
+      <div id="plant-display" style="font-size:64px;line-height:1;margin-bottom:6px">🌰</div>
+      <div id="pet-display" style="font-size:40px;line-height:1;margin-bottom:8px">🥚</div>
+      <div id="plant-label" style="font-size:12px;color:var(--muted)">Keep writing to grow!</div>
+    </div>
+    <div class="gratitude-card">
+      <div style="font-weight:600;margin-bottom:14px;font-size:15px">Your Streak</div>
+      <div class="streak-num" id="streak-num">0</div>
+      <div style="font-size:13px;color:var(--muted);margin:4px 0 18px">days in a row</div>
+      <div style="font-size:13px;color:var(--muted)">Total entries: <strong id="entry-count">0</strong></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Level: <strong id="plant-level">Seed 🌰</strong></div>
+    </div>
+  </div>
+  <div class="write-area">
+    <div style="font-weight:600;margin-bottom:12px;font-size:15px">Today I am grateful for…</div>
+    <textarea id="gratitude-text" placeholder="Write anything — big or small. A warm cup of tea, a friend's smile, a quiet moment…" style="min-height:120px"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+      <button class="btn-primary" id="save-gratitude-btn">Save & Water Plant 💧</button>
+      <span id="saved-msg" style="font-size:13px;color:var(--green);opacity:0;transition:opacity .3s">Saved! ✓</span>
+    </div>
+  </div>
+  <div class="section-title" style="font-size:19px;margin-bottom:14px">Past Entries</div>
+  <div id="past-entries"></div>
+</div>
+
+<!-- BLOGS -->
+<div class="page" id="page-blogs">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+    <div><div class="section-title">Blogs ✍️</div><div class="section-sub" style="margin:0">Read, write, and share your stories</div></div>
+    <button class="btn-primary" id="new-blog-btn">+ New Blog</button>
+  </div>
+  <div class="toggle" id="blog-filter-toggle">
+    <div class="toggle-opt active" data-filter="all">All Posts</div>
+    <div class="toggle-opt" data-filter="public">Public</div>
+    <div class="toggle-opt" data-filter="mine">My Posts</div>
+  </div>
+  <div class="blog-grid" id="blog-list"></div>
+</div>
+
+<!-- COMMUNITY -->
+<div class="page" id="page-community">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+    <div><div class="section-title">Communities 🌸</div><div class="section-sub" style="margin:0">Find your people and take on challenges together</div></div>
+    <button class="btn-primary" id="new-community-btn">+ Create Community</button>
+  </div>
+  <div class="community-grid" id="community-list"></div>
+  <div class="divider"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div class="section-title" style="font-size:20px">Active Challenges</div>
+    <button class="btn-secondary" id="new-challenge-btn">+ New Challenge</button>
+  </div>
+  <div id="challenge-list"></div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="profile-header">
+    <div class="profile-info">
+      <div class="profile-name">Luna Bloom</div>
+      <div class="profile-bio">Dark academia enthusiast 🖤 plant mom 🌿 aspiring poet</div>
+      <div class="profile-stats">
+        <div class="stat"><div class="stat-num" id="stat-posts">0</div><div class="stat-label">posts</div></div>
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">followers</div></div>
+        <div class="stat"><div class="stat-num">8</div><div class="stat-label">following</div></div>
+        <div class="stat"><div class="stat-num" id="stat-streak2">0</div><div class="stat-label">streak</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-title" style="font-size:20px;margin-bottom:14px">My Recent Posts</div>
+  <div id="profile-posts"></div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="max-width:600px">
+    <h3>⚙️ Settings</h3>
+    <div class="settings-section">
+      <div class="settings-section-title">🎨 Theme</div>
+      <div class="theme-grid" id="settings-theme-grid"></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">✍️ Font</div>
+      <div class="font-grid" id="settings-font-grid"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary" id="close-settings-btn">Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- BLOG MODAL -->
+<div class="modal-overlay" id="blog-modal">
+  <div class="modal">
+    <h3>Write a New Blog</h3>
+    <div class="form-group"><label class="form-label">Title</label><input id="blog-title-inp" placeholder="Give your story a name…"/></div>
+    <div class="form-group"><label class="form-label">Write Your Story</label><textarea id="blog-body-inp" style="min-height:140px" placeholder="Once upon a time…"></textarea></div>
+    <div class="form-group"><label class="form-label">Theme Tag</label>
+      <select id="blog-theme-inp">
+        <option value="dark academia">Dark Academia</option><option value="cottage">Cottagecore</option>
+        <option value="y2k">Y2K</option><option value="coquette">Coquette</option>
+        <option value="fairy">Fairycore</option><option value="midnight">Midnight Glam</option>
+        <option value="ocean">Ocean</option><option value="cherry">Cherry Blossom</option>
+        <option value="vintage">Vintage</option><option value="solar">Solarpunk</option>
+        <option value="general">General</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <div class="toggle" id="visibility-toggle" style="margin-bottom:0">
+        <div class="toggle-opt active" data-vis="public">🌍 Public</div>
+        <div class="toggle-opt" data-vis="private">🔒 Private</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="cancel-blog-btn">Cancel</button>
+      <button class="btn-primary" id="publish-blog-btn">Publish ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMMUNITY MODAL -->
+<div class="modal-overlay" id="community-modal">
+  <div class="modal">
+    <h3>Create a Community</h3>
+    <div class="form-group"><label class="form-label">Community Name</label><input id="comm-name-inp" placeholder="e.g. Dark Academia Book Club"/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="comm-desc-inp" placeholder="What is this community about?"></textarea></div>
+    <div class="form-group"><label class="form-label">Emoji Icon</label><input id="comm-icon-inp" placeholder="🌙" maxlength="2"/></div>
+    <div class="form-group"><label class="form-label">Theme Colour</label><div class="swatch-row" id="comm-color-swatches"></div></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="cancel-community-btn">Cancel</button>
+      <button class="btn-primary" id="create-community-btn">Create 🌸</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHALLENGE MODAL -->
+<div class="modal-overlay" id="challenge-modal">
+  <div class="modal">
+    <h3>Create a Challenge</h3>
+    <div class="form-group"><label class="form-label">Challenge Title</label><input id="chal-title-inp" placeholder="e.g. 7-Day Gratitude Streak"/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="chal-desc-inp" placeholder="What do participants need to do?"></textarea></div>
+    <div class="form-group"><label class="form-label">Duration</label>
+      <select id="chal-duration-inp"><option>3 days</option><option>7 days</option><option>14 days</option><option>30 days</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Reward Badge Emoji</label><input id="chal-badge-inp" placeholder="🏆" maxlength="2"/></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="cancel-challenge-btn">Cancel</button>
+      <button class="btn-primary" id="create-challenge-btn">Launch Challenge 🚀</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  var state = {
+    theme: 'default', font: 'playfair',
+    gratitude: [], blogs: [], communities: [], challenges: [],
+    blogVisibility: 'public', commColor: '#c8553d',
+    liked: new Set(), following: new Set()
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  /* =========================================================
+     THEME DECORATIONS
+     ========================================================= */
+  var decoTimers = [];
+  var decoEl = $('theme-deco');
+
+  function clearDeco() {
+    decoTimers.forEach(clearInterval);
+    decoTimers = [];
+    decoEl.innerHTML = '';
+  }
+
+  function spawnDeco(emoji, count, minSize, maxSize, minDuration, maxDuration, animClass, extraStyle) {
+    for (var i = 0; i < count; i++) {
+      (function (idx) {
+        var delay = Math.random() * minDuration * 1000;
+        setTimeout(function () {
+          var el = document.createElement('div');
+          el.className = 'deco-item';
+          var size = minSize + Math.random() * (maxSize - minSize);
+          var left = Math.random() * 100;
+          var dur = minDuration + Math.random() * (maxDuration - minDuration);
+          el.textContent = typeof emoji === 'function' ? emoji() : emoji;
+          el.style.cssText = 'left:' + left + '%;bottom:-60px;font-size:' + size + 'px;animation-duration:' + dur + 's;animation-delay:' + (Math.random() * 4) + 's;' + (extraStyle || '');
+          if (animClass) el.style.animationName = animClass;
+          decoEl.appendChild(el);
+          // respawn
+          var timer = setInterval(function () {
+            el.style.left = Math.random() * 100 + '%';
+            el.style.animationDuration = (minDuration + Math.random() * (maxDuration - minDuration)) + 's';
+          }, dur * 1000);
+          decoTimers.push(timer);
+        }, delay);
+      })(i);
+    }
+  }
+
+  function spawnCandles(count) {
+    for (var i = 0; i < count; i++) {
+      var left = 5 + Math.random() * 90;
+      var bottom = 0;
+      var wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position:absolute;left:' + left + '%;bottom:' + bottom + 'px;pointer-events:none';
+      // candle body
+      var candle = document.createElement('div');
+      candle.style.cssText = 'width:12px;height:' + (30 + Math.random() * 30) + 'px;background:linear-gradient(to bottom,#f5e0c0,#e8c890);border-radius:3px;position:relative;margin:0 auto';
+      // flame
+      var flame = document.createElement('div');
+      var flameH = 16 + Math.random() * 10;
+      flame.style.cssText = 'width:10px;height:' + flameH + 'px;background:radial-gradient(ellipse at 50% 80%,#fff 0%,#ffd060 40%,#ff8020 70%,transparent 100%);border-radius:50% 50% 30% 30%;position:absolute;top:-' + flameH + 'px;left:1px;animation:flicker ' + (1.5 + Math.random()) + 's ease-in-out infinite alternate';
+      candle.appendChild(flame);
+      wrapper.appendChild(candle);
+      decoEl.appendChild(wrapper);
+    }
+  }
+
+  function spawnWaves() {
+    // SVG waves at the bottom
+    var waveDiv = document.createElement('div');
+    waveDiv.style.cssText = 'position:fixed;bottom:0;left:0;width:100%;pointer-events:none;z-index:0;overflow:hidden;height:120px';
+    waveDiv.innerHTML = '<svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;position:absolute;bottom:0">'
+      + '<path d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120 Z" fill="rgba(8,112,160,.12)" style="animation:wave 6s ease-in-out infinite"/>'
+      + '<path d="M0,80 C360,40 720,100 1080,60 C1260,40 1380,80 1440,70 L1440,120 L0,120 Z" fill="rgba(10,170,122,.08)" style="animation:wave 8s ease-in-out infinite reverse"/>'
+      + '</svg>';
+    decoEl.appendChild(waveDiv);
+    // fish and bubbles floating up
+    spawnDeco('🐠', 4, 18, 28, 10, 16, 'float', '');
+    spawnDeco('🫧', 8, 10, 18, 6, 12, 'float', 'opacity:.5');
+    spawnDeco('🐚', 3, 14, 20, 12, 20, 'float', '');
+  }
+
+  function spawnLeaves() {
+    var leafEmojis = ['🍃','🌿','🍀','🌱'];
+    spawnDeco(function(){ return leafEmojis[Math.floor(Math.random()*leafEmojis.length)]; }, 14, 14, 26, 8, 16, 'float', '');
+    spawnDeco('🦋', 4, 14, 22, 10, 18, 'float', '');
+    spawnDeco('🐝', 3, 14, 18, 9, 15, 'float', '');
+  }
+
+  function spawnStars() {
+    // fixed twinkling stars
+    for (var i = 0; i < 40; i++) {
+      var star = document.createElement('div');
+      var size = 2 + Math.random() * 4;
+      var top = Math.random() * 80;
+      var left = Math.random() * 100;
+      var dur = 1.5 + Math.random() * 3;
+      star.style.cssText = 'position:absolute;top:' + top + '%;left:' + left + '%;width:' + size + 'px;height:' + size + 'px;background:#fff;border-radius:50%;animation:twinkle ' + dur + 's ease-in-out infinite;animation-delay:' + (Math.random() * 3) + 's';
+      decoEl.appendChild(star);
+    }
+    spawnDeco('⭐', 3, 14, 22, 12, 20, 'float', '');
+    spawnDeco('🌙', 2, 18, 26, 15, 25, 'float', '');
+    spawnDeco('✨', 8, 12, 20, 8, 14, 'float', '');
+  }
+
+  function spawnCherryBlossoms() {
+    var flowers = ['🌸','🌺','🌷'];
+    spawnDeco(function(){ return flowers[Math.floor(Math.random()*flowers.length)]; }, 18, 12, 24, 6, 14, 'float', '');
+    spawnDeco('🦢', 3, 16, 22, 10, 18, 'float', '');
+    // petal rain — tiny pink squares
+    for (var i = 0; i < 20; i++) {
+      var petal = document.createElement('div');
+      var size = 4 + Math.random() * 6;
+      var dur = 6 + Math.random() * 8;
+      petal.style.cssText = 'position:absolute;left:' + (Math.random()*100) + '%;bottom:-20px;width:' + size + 'px;height:' + size + 'px;background:rgba(224,56,104,.35);border-radius:50% 0 50% 0;transform:rotate(' + (Math.random()*360) + 'deg);animation:float ' + dur + 's linear infinite;animation-delay:' + (Math.random()*dur) + 's';
+      decoEl.appendChild(petal);
+    }
+  }
+
+  function spawnCoquette() {
+    var items = ['🎀','🪞','🌹','💌','🫶'];
+    spawnDeco(function(){ return items[Math.floor(Math.random()*items.length)]; }, 14, 14, 24, 7, 14, 'float', '');
+    // ribbon strips
+    for (var i = 0; i < 8; i++) {
+      var rib = document.createElement('div');
+      var w = 4 + Math.random() * 3;
+      var h = 40 + Math.random() * 40;
+      var left = Math.random() * 100;
+      var dur = 8 + Math.random() * 8;
+      rib.style.cssText = 'position:absolute;left:' + left + '%;bottom:-60px;width:' + w + 'px;height:' + h + 'px;background:rgba(224,80,122,.22);border-radius:' + w + 'px;animation:float ' + dur + 's linear infinite;animation-delay:' + (Math.random()*dur) + 's';
+      decoEl.appendChild(rib);
+    }
+  }
+
+  function spawnFairy() {
+    var items = ['✨','🍄','🌟','🫧','🦋','🌙'];
+    spawnDeco(function(){ return items[Math.floor(Math.random()*items.length)]; }, 16, 12, 22, 7, 15, 'float', '');
+    // sparkle dots
+    for (var i = 0; i < 25; i++) {
+      var sp = document.createElement('div');
+      var size = 3 + Math.random() * 5;
+      var top = Math.random() * 100;
+      var left = Math.random() * 100;
+      var color = ['#c060ff','#ff60d0','#60d0ff','#d0ff60'][Math.floor(Math.random()*4)];
+      sp.style.cssText = 'position:absolute;top:' + top + '%;left:' + left + '%;width:' + size + 'px;height:' + size + 'px;background:' + color + ';border-radius:50%;animation:twinkle ' + (1.5+Math.random()*3) + 's ease-in-out infinite;animation-delay:' + (Math.random()*3) + 's;opacity:.6';
+      decoEl.appendChild(sp);
+    }
+  }
+
+  function spawnDarkAcademia() {
+    spawnCandles(6);
+    spawnDeco('📜', 3, 16, 22, 14, 22, 'float', '');
+    spawnDeco('🦉', 2, 18, 24, 16, 26, 'float', '');
+    spawnDeco('🍂', 8, 12, 20, 10, 18, 'float', '');
+    // dust motes
+    for (var i = 0; i < 20; i++) {
+      var mote = document.createElement('div');
+      var size = 2 + Math.random() * 3;
+      mote.style.cssText = 'position:absolute;left:' + (Math.random()*100) + '%;bottom:-10px;width:' + size + 'px;height:' + size + 'px;background:rgba(200,160,96,.4);border-radius:50%;animation:float ' + (10+Math.random()*10) + 's linear infinite;animation-delay:' + (Math.random()*15) + 's';
+      decoEl.appendChild(mote);
+    }
+  }
+
+  function spawnMidnight() {
+    spawnStars();
+    spawnDeco('🌠', 3, 16, 24, 14, 22, 'float', '');
+    spawnDeco('🔮', 2, 16, 22, 15, 25, 'float', '');
+    // shooting stars
+    for (var i = 0; i < 5; i++) {
+      var shoot = document.createElement('div');
+      var top = 5 + Math.random() * 40;
+      var dur = 4 + Math.random() * 6;
+      shoot.style.cssText = 'position:absolute;top:' + top + '%;left:100%;width:' + (40+Math.random()*60) + 'px;height:2px;background:linear-gradient(to left,rgba(192,96,255,.8),transparent);border-radius:2px;animation:float ' + dur + 's linear infinite;animation-delay:' + (Math.random()*8) + 's;transform:rotate(-20deg)';
+      decoEl.appendChild(shoot);
+    }
+  }
+
+  function spawnDarkRomance() {
+    spawnDeco('🌹', 10, 14, 22, 8, 16, 'float', '');
+    spawnDeco('🕯️', 4, 18, 26, 12, 20, 'float', '');
+    spawnDeco('🦇', 5, 14, 20, 10, 18, 'float', '');
+    spawnDeco('💌', 4, 14, 20, 10, 16, 'float', '');
+    spawnCandles(4);
+  }
+
+  function applyThemeDeco(themeId) {
+    clearDeco();
+    switch (themeId) {
+      case 'dark-academia': spawnDarkAcademia(); break;
+      case 'cottage':       spawnLeaves(); break;
+      case 'ocean':         spawnWaves(); break;
+      case 'cherry':        spawnCherryBlossoms(); break;
+      case 'midnight':      spawnMidnight(); break;
+      case 'coquette':      spawnCoquette(); break;
+      case 'fairy':         spawnFairy(); break;
+      case 'darkromance':   spawnDarkRomance(); break;
+      case 'y2k':
+        spawnDeco('💿', 4, 16, 24, 8, 14, 'float', '');
+        spawnDeco('⭐', 6, 12, 18, 7, 12, 'float', '');
+        spawnDeco('🦋', 4, 14, 20, 9, 16, 'float', '');
+        break;
+      case 'solar':
+        spawnDeco('🌻', 6, 16, 24, 9, 16, 'float', '');
+        spawnDeco('🌞', 2, 22, 30, 14, 22, 'float', '');
+        spawnLeaves();
+        break;
+      case 'vintage':
+        spawnCandles(3);
+        spawnDeco('📖', 3, 16, 22, 14, 22, 'float', '');
+        spawnDeco('🌷', 6, 14, 20, 9, 16, 'float', '');
+        break;
+      default: break; // default & minimalist — clean
+    }
+  }
+
+  /* =========================================================
+     THEMES & FONTS IN SETTINGS
+     ========================================================= */
+  var themes = [
+    {id:'default',      label:'✿ Default',        cls:'',            preview:'#fdf6f0,#c8553d',   emojis:['🌸','✿']},
+    {id:'dark-academia',label:'🖤 Dark Academia',  cls:'dark-academia',preview:'#0d0b09,#c8a060', emojis:['🕯️','📚']},
+    {id:'cottage',      label:'🌿 Cottagecore',    cls:'cottage',      preview:'#f0ead8,#7a9e5f', emojis:['🍃','🌻']},
+    {id:'y2k',          label:'💿 Y2K',            cls:'y2k',          preview:'#fff0fb,#e91e8c', emojis:['💿','⭐']},
+    {id:'minimalist',   label:'○ Minimalist',      cls:'minimalist',   preview:'#f7f7f5,#1a1a1a', emojis:['○','—']},
+    {id:'ocean',        label:'🌊 Ocean',           cls:'ocean',        preview:'#ddf0f8,#0870a0', emojis:['🌊','🐚']},
+    {id:'midnight',     label:'🌙 Midnight Glam',  cls:'midnight',     preview:'#060410,#c060ff', emojis:['⭐','🌙']},
+    {id:'cherry',       label:'🌸 Cherry Blossom', cls:'cherry',       preview:'#fff4f7,#e03868', emojis:['🌸','🌺']},
+    {id:'coquette',     label:'🎀 Coquette',        cls:'coquette',     preview:'#fff0f3,#e0507a', emojis:['🎀','🌹']},
+    {id:'fairy',        label:'🧚 Fairycore',       cls:'fairy',        preview:'#f4f0ff,#8040d0', emojis:['✨','🍄']},
+    {id:'vintage',      label:'📜 Vintage Academia',cls:'vintage',      preview:'#f5ede0,#8a5020', emojis:['📜','🕯️']},
+    {id:'solar',        label:'🌻 Solarpunk',       cls:'solar',        preview:'#f0f8e8,#3a8830', emojis:['🌻','☀️']},
+    {id:'darkromance',  label:'🌹 Dark Romance',    cls:'darkromance',  preview:'#120810,#c84080', emojis:['🌹','🦇']}
+  ];
+
+  var fonts = [
+    {id:'playfair',  label:'Playfair Display',    family:"'Playfair Display',serif",        preview:'Elegant serif'},
+    {id:'cormorant', label:'Cormorant Garamond',  family:"'Cormorant Garamond',serif",      preview:'Literary italic'},
+    {id:'satisfy',   label:'Satisfy',             family:"'Satisfy',cursive",               preview:'Flowing script'},
+    {id:'italiana',  label:'Italiana',            family:"'Italiana',serif",                preview:'Luxury fashion'},
+    {id:'cinzel',    label:'Cinzel',              family:"'Cinzel',serif",                  preview:'Classic roman'},
+    {id:'josefin',   label:'Josefin Sans',        family:"'Josefin Sans',sans-serif",       preview:'Clean geometric'},
+    {id:'space',     label:'Space Grotesk',       family:"'Space Grotesk',sans-serif",      preview:'Modern tech'},
+    {id:'nunito',    label:'Nunito',              family:"'Nunito',sans-serif",             preview:'Friendly rounded'}
+  ];
+
+  // Build settings theme grid
+  var tg = $('settings-theme-grid');
+  themes.forEach(function (t) {
+    var cols = t.preview.split(',');
+    var tile = document.createElement('div');
+    tile.className = 'theme-tile' + (state.theme === t.id ? ' active' : '');
+    tile.innerHTML = '<div class="theme-tile-preview" style="background:' + cols[0] + ';border:2px solid ' + cols[1] + '">'
+      + t.emojis.map(function(e){return '<span>'+e+'</span>';}).join('')
+      + '</div><div class="theme-tile-name" style="color:' + cols[1] + '">' + t.label + '</div>';
+    tile.addEventListener('click', function () {
+      state.theme = t.id;
+      document.body.className = t.cls;
+      tg.querySelectorAll('.theme-tile').forEach(function (x) { x.classList.remove('active'); });
+      tile.classList.add('active');
+      applyThemeDeco(t.id);
+    });
+    tg.appendChild(tile);
+  });
+
+  // Build settings font grid
+  var fg = $('settings-font-grid');
+  fonts.forEach(function (f) {
+    var tile = document.createElement('div');
+    tile.className = 'font-tile' + (state.font === f.id ? ' active' : '');
+    tile.innerHTML = '<div class="font-tile-name" style="font-family:' + f.family + '">' + f.label + '</div>'
+      + '<div class="font-tile-preview" style="font-family:' + f.family + '">' + f.preview + '</div>';
+    tile.addEventListener('click', function () {
+      state.font = f.id;
+      document.documentElement.style.setProperty('--font-head', f.family);
+      document.documentElement.style.setProperty('--font-body', f.family);
+      fg.querySelectorAll('.font-tile').forEach(function (x) { x.classList.remove('active'); });
+      tile.classList.add('active');
+    });
+    fg.appendChild(tile);
+  });
+
+  $('open-settings-btn').addEventListener('click', function () { $('settings-modal').classList.add('open'); });
+  $('close-settings-btn').addEventListener('click', function () { $('settings-modal').classList.remove('open'); });
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.remove('active'); });
+    var pg = $('page-' + id); if (pg) pg.classList.add('active');
+    var btn = document.querySelector('.nav-btn[data-page="' + id + '"]'); if (btn) btn.classList.add('active');
+    if (id === 'blogs') renderBlogs('all');
+    if (id === 'community') { renderCommunities(); renderChallenges(); }
+    if (id === 'home') renderFeed();
+    if (id === 'profile') renderProfilePosts();
+  }
+
+  document.querySelectorAll('.nav-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { showPage(this.dataset.page); });
+  });
+  $('home-journal').addEventListener('click', function () { showPage('journal'); });
+  $('home-blogs').addEventListener('click', function () { showPage('blogs'); });
+  $('home-community').addEventListener('click', function () { showPage('community'); });
+  $('home-profile').addEventListener('click', function () { showPage('profile'); });
+
+  /* =========================================================
+     GRATITUDE
+     ========================================================= */
+  var plantStages = [
+    {emoji:'🌰',label:'Seed',min:0},{emoji:'🌱',label:'Sprout',min:1},
+    {emoji:'🌿',label:'Seedling',min:3},{emoji:'🪴',label:'Young Plant',min:6},
+    {emoji:'🌸',label:'Flowering',min:10},{emoji:'🌳',label:'Full Tree',min:15}
+  ];
+  var petStages = [
+    {emoji:'🥚',min:0},{emoji:'🐣',min:1},{emoji:'🐥',min:3},
+    {emoji:'🐦',min:6},{emoji:'🦜',min:10},{emoji:'🦋',min:15}
+  ];
+
+  function updatePlant() {
+    var c = state.gratitude.length;
+    var s = plantStages.filter(function(x){return c>=x.min;}).pop();
+    var p = petStages.filter(function(x){return c>=x.min;}).pop();
+    var pd=$('plant-display'); if(pd) pd.textContent=s.emoji;
+    var pe=$('pet-display'); if(pe) pe.textContent=p.emoji;
+    var pl=$('plant-label'); if(pl) pl.textContent=s.label+' ('+c+' entries)';
+    var plv=$('plant-level'); if(plv) plv.textContent=s.label+' '+s.emoji;
+    var sn=$('streak-num'); if(sn) sn.textContent=c;
+    var ec=$('entry-count'); if(ec) ec.textContent=c;
+    var ss=$('stat-streak2'); if(ss) ss.textContent=c;
+  }
+
+  function renderPastEntries() {
+    var el=$('past-entries'); if(!el) return;
+    if(!state.gratitude.length){el.innerHTML='<p style="color:var(--muted);font-size:14px">No entries yet — write your first gratitude above!</p>';return;}
+    el.innerHTML=state.gratitude.map(function(e){
+      return '<div class="blog-card" style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">'+e.date+'</div><div style="font-size:14px;line-height:1.7">'+e.text+'</div></div>';
+    }).join('');
+  }
+
+  $('save-gratitude-btn').addEventListener('click', function(){
+    var txt=$('gratitude-text').value.trim(); if(!txt) return;
+    state.gratitude.unshift({text:txt,date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});
+    $('gratitude-text').value='';
+    var msg=$('saved-msg'); msg.style.opacity='1'; setTimeout(function(){msg.style.opacity='0';},2000);
+    updatePlant(); renderPastEntries();
+  });
+
+  /* =========================================================
+     BLOGS
+     ========================================================= */
+  state.blogs = [
+    {id:1,title:'The Library at Midnight',body:'There is something sacred about a library after dark. The dust motes catching the lamplight like tiny planets in an amber universe. I stayed until they turned the lights off…',theme:'dark academia',visibility:'public',author:'Luna',likes:14,mine:true},
+    {id:2,title:'Morning Tea & Fog',body:'I wake up before the sun these days. The kettle sings its gentle song and I wrap both hands around the mug, watching the steam rise and disappear into the cool morning air.',theme:'cottage',visibility:'public',author:'Rosie',likes:8,mine:false},
+    {id:3,title:'Thoughts on Solitude',body:'Sometimes I think solitude is the most honest version of myself. No performance, no audience. Just me and the hum of the room.',theme:'minimalist',visibility:'public',author:'Zara',likes:22,mine:false},
+    {id:4,title:'Bows & Butterflies',body:'Coquette is not just an aesthetic. It is a whole philosophy of softness, of choosing beauty deliberately, of adorning yourself with intention.',theme:'coquette',visibility:'public',author:'Mia',likes:17,mine:false},
+    {id:5,title:'My Secret Garden',body:'Private thoughts belong to a secret garden only I can enter.',theme:'cottage',visibility:'private',author:'Luna',likes:0,mine:true}
+  ];
+
+  var tagMap = {'dark':['dark-academia','midnight','vintage','darkromance'],'cottage':['cottage','solar'],'pink':['coquette','cherry','y2k','fairy'],'ocean':['ocean']};
+
+  function getTagClass(theme) {
+    var t = theme.toLowerCase();
+    if(tagMap.dark.indexOf(t)>=0) return 'tag-dark';
+    if(tagMap.cottage.indexOf(t)>=0) return 'tag-cottage';
+    if(tagMap.pink.indexOf(t)>=0) return 'tag-pink';
+    if(tagMap.ocean.indexOf(t)>=0) return 'tag-ocean';
+    return 'tag-public';
+  }
+
+  function renderBlogs(filter) {
+    var el=$('blog-list'); if(!el) return;
+    var list=state.blogs.slice();
+    if(filter==='public') list=list.filter(function(b){return b.visibility==='public';});
+    if(filter==='mine') list=list.filter(function(b){return b.mine;});
+    if(!list.length){el.innerHTML='<p style="color:var(--muted);font-size:14px">No posts here yet.</p>';return;}
+    el.innerHTML='';
+    list.forEach(function(b){
+      var div=document.createElement('div'); div.className='blog-card';
+      div.innerHTML='<div class="blog-meta">'
+        +'<span class="blog-tag '+getTagClass(b.theme)+'">'+b.theme+'</span>'
+        +'<span class="blog-tag '+(b.visibility==='private'?'tag-private':'tag-public')+'">'+(b.visibility==='private'?'🔒 Private':'🌍 Public')+'</span>'
+        +'</div>'
+        +'<div class="blog-title">'+b.title+'</div>'
+        +'<div class="blog-excerpt">'+b.body.substring(0,150)+(b.body.length>150?'…':'')+'</div>'
+        +'<div class="blog-footer">'
+        +'<div style="display:flex;gap:8px;align-items:center">'
+        +'<button class="like-btn'+(state.liked.has(b.id)?' liked':'')+'" data-id="'+b.id+'">♡ '+(b.likes+(state.liked.has(b.id)?1:0))+'</button>'
+        +'<span style="font-size:12px;color:var(--muted)">by '+b.author+'</span>'
+        +'</div>'
+        +(!b.mine?'<button class="follow-btn'+(state.following.has(b.author)?' following':'')+'" data-author="'+b.author+'">'+(state.following.has(b.author)?'Following ✓':'+ Follow')+'</button>':'<span style="font-size:12px;color:var(--muted)">your post</span>')
+        +'</div>';
+      div.querySelector('.like-btn').addEventListener('click', function(){
+        var id=parseInt(this.dataset.id);
+        if(state.liked.has(id)) state.liked.delete(id); else state.liked.add(id);
+        renderBlogs(filter);
+      });
+      var fb=div.querySelector('.follow-btn');
+      if(fb) fb.addEventListener('click', function(){
+        var a=this.dataset.author;
+        if(state.following.has(a)) state.following.delete(a); else state.following.add(a);
+        renderBlogs(filter);
+      });
+      el.appendChild(div);
+    });
+    var sp=$('stat-posts'); if(sp) sp.textContent=state.blogs.filter(function(b){return b.mine;}).length;
+  }
+
+  $('blog-filter-toggle').addEventListener('click', function(e){
+    var opt=e.target.closest('.toggle-opt'); if(!opt) return;
+    this.querySelectorAll('.toggle-opt').forEach(function(o){o.classList.remove('active');});
+    opt.classList.add('active'); renderBlogs(opt.dataset.filter);
+  });
+  $('visibility-toggle').addEventListener('click', function(e){
+    var opt=e.target.closest('.toggle-opt'); if(!opt) return;
+    this.querySelectorAll('.toggle-opt').forEach(function(o){o.classList.remove('active');});
+    opt.classList.add('active'); state.blogVisibility=opt.dataset.vis;
+  });
+  $('new-blog-btn').addEventListener('click', function(){ $('blog-modal').classList.add('open'); });
+  $('cancel-blog-btn').addEventListener('click', function(){ $('blog-modal').classList.remove('open'); });
+  $('publish-blog-btn').addEventListener('click', function(){
+    var title=$('blog-title-inp').value.trim(), body=$('blog-body-inp').value.trim(), theme=$('blog-theme-inp').value;
+    if(!title||!body) return;
+    state.blogs.unshift({id:Date.now(),title:title,body:body,theme:theme,visibility:state.blogVisibility,author:'Luna',likes:0,mine:true});
+    $('blog-modal').classList.remove('open');
+    $('blog-title-inp').value=''; $('blog-body-inp').value='';
+    renderBlogs('all');
+  });
+
+  /* =========================================================
+     COMMUNITY
+     ========================================================= */
+  state.communities=[
+    {id:1,name:'Dark Academia Society',desc:'Books, aesthetics, and deep thoughts',icon:'🖤',color:'#3d2a5a',members:248},
+    {id:2,name:'Cottage Garden Club',desc:'Plants, baking, and cozy living',icon:'🌿',color:'#3d8c5f',members:182},
+    {id:3,name:'Y2K Revival',desc:'All things 2000s and sparkly',icon:'💿',color:'#c8107a',members:94},
+    {id:4,name:'Midnight Writers',desc:'Late night thoughts and creative fiction',icon:'🌙',color:'#3a1a6a',members:67},
+    {id:5,name:'Coquette Diaries',desc:'Softness, ribbons, and intentional beauty',icon:'🎀',color:'#e0507a',members:113},
+    {id:6,name:'Fairycore Circle',desc:'Magic, mushrooms, and fae energy',icon:'✨',color:'#8040d0',members:88}
+  ];
+  state.challenges=[
+    {id:1,title:'7-Day Gratitude Streak',desc:'Write in your gratitude journal every day for 7 days',duration:'7 days',badge:'🌱',progress:65,joined:false},
+    {id:2,title:'Read 3 Chapters This Week',desc:'Commit to reading at least 3 chapters of any book',duration:'7 days',badge:'📚',progress:40,joined:false},
+    {id:3,title:'30-Day Self Love',desc:'One kind thought about yourself every single day',duration:'30 days',badge:'💖',progress:20,joined:false},
+    {id:4,title:'Aesthetic Photo-a-Day',desc:'Post one photo matching your chosen aesthetic every day',duration:'14 days',badge:'📸',progress:55,joined:false},
+    {id:5,title:'No-Scroll Morning',desc:'Don\'t check your phone for the first 30 minutes every morning',duration:'7 days',badge:'🌅',progress:38,joined:false}
+  ];
+
+  function renderCommunities(){
+    var el=$('community-list'); if(!el) return; el.innerHTML='';
+    state.communities.forEach(function(c){
+      var div=document.createElement('div'); div.className='community-card';
+      div.innerHTML='<div class="community-icon" style="background:'+c.color+'22">'+c.icon+'</div>'
+        +'<div class="community-name">'+c.name+'</div>'
+        +'<div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">'+c.desc+'</div>'
+        +'<div style="font-size:12px;color:var(--muted)">👥 '+c.members+' members</div>';
+      el.appendChild(div);
+    });
+  }
+
+  function renderChallenges(){
+    var el=$('challenge-list'); if(!el) return; el.innerHTML='';
+    state.challenges.forEach(function(c){
+      var div=document.createElement('div'); div.className='challenge-card';
+      div.innerHTML='<div class="challenge-badge">'+c.badge+'</div>'
+        +'<div class="challenge-info">'
+        +'<div class="challenge-title">'+c.title+'</div>'
+        +'<div class="challenge-desc">'+c.desc+'</div>'
+        +'<div style="display:flex;gap:8px;margin-top:8px"><span style="font-size:11px;color:var(--muted)">⏱ '+c.duration+'</span><span style="font-size:11px;color:var(--muted)">• '+c.progress+'% completing</span></div>'
+        +'<div class="progress-bar"><div class="progress-fill" style="width:'+c.progress+'%"></div></div>'
+        +'</div>'
+        +'<button class="join-btn'+(c.joined?' joined':'')+'" data-id="'+c.id+'">'+(c.joined?'Joined ✓':'Join')+'</button>';
+      div.querySelector('.join-btn').addEventListener('click', function(){
+        var id=parseInt(this.dataset.id);
+        var ch=state.challenges.find(function(x){return x.id===id;});
+        if(ch){ ch.joined=!ch.joined; renderChallenges(); }
+      });
+      el.appendChild(div);
+    });
+  }
+
+  var commColors=['#c8553d','#7c4dbc','#3d8c5f','#c47a1e','#1a6e8a','#d4567a','#3a1a6a','#e0507a'];
+  var ccEl=$('comm-color-swatches');
+  commColors.forEach(function(c){
+    var sw=document.createElement('div'); sw.className='swatch'+(state.commColor===c?' active':''); sw.style.background=c;
+    sw.addEventListener('click', function(){ state.commColor=c; ccEl.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('active');}); sw.classList.add('active'); });
+    ccEl.appendChild(sw);
+  });
+
+  $('new-community-btn').addEventListener('click', function(){ $('community-modal').classList.add('open'); });
+  $('cancel-community-btn').addEventListener('click', function(){ $('community-modal').classList.remove('open'); });
+  $('create-community-btn').addEventListener('click', function(){
+    var name=$('comm-name-inp').value.trim(), desc=$('comm-desc-inp').value.trim(), icon=$('comm-icon-inp').value.trim()||'✿';
+    if(!name) return;
+    state.communities.unshift({id:Date.now(),name:name,desc:desc||'A new community',icon:icon,color:state.commColor,members:1});
+    $('community-modal').classList.remove('open');
+    $('comm-name-inp').value=''; $('comm-desc-inp').value=''; $('comm-icon-inp').value='';
+    renderCommunities();
+  });
+  $('new-challenge-btn').addEventListener('click', function(){ $('challenge-modal').classList.add('open'); });
+  $('cancel-challenge-btn').addEventListener('click', function(){ $('challenge-modal').classList.remove('open'); });
+  $('create-challenge-btn').addEventListener('click', function(){
+    var title=$('chal-title-inp').value.trim(), desc=$('chal-desc-inp').value.trim();
+    var dur=$('chal-duration-inp').value, badge=$('chal-badge-inp').value.trim()||'🏆';
+    if(!title) return;
+    state.challenges.unshift({id:Date.now(),title:title,desc:desc||'A new challenge awaits!',duration:dur,badge:badge,progress:0,joined:false});
+    $('challenge-modal').classList.remove('open');
+    $('chal-title-inp').value=''; $('chal-desc-inp').value=''; $('chal-badge-inp').value='';
+    renderChallenges();
+  });
+
+  /* =========================================================
+     PROFILE POSTS
+     ========================================================= */
+  function renderProfilePosts() {
+    var el=$('profile-posts'); if(!el) return;
+    var mine=state.blogs.filter(function(b){return b.mine;});
+    var sp=$('stat-posts'); if(sp) sp.textContent=mine.length;
+    if(!mine.length){el.innerHTML='<p style="color:var(--muted);font-size:14px">No posts yet — write your first blog!</p>';return;}
+    el.innerHTML='';
+    mine.forEach(function(b){
+      var div=document.createElement('div'); div.className='blog-card'; div.style.marginBottom='12px';
+      div.innerHTML='<div class="blog-meta"><span class="blog-tag '+getTagClass(b.theme)+'">'+b.theme+'</span><span class="blog-tag '+(b.visibility==='private'?'tag-private':'tag-public')+'">'+(b.visibility==='private'?'🔒':'🌍')+'</span></div>'
+        +'<div class="blog-title">'+b.title+'</div>'
+        +'<div class="blog-excerpt">'+b.body.substring(0,100)+'…</div>';
+      el.appendChild(div);
+    });
+  }
+
+  /* =========================================================
+     FEED
+     ========================================================= */
+  function renderFeed(){
+    var el=$('feed-home'); if(!el) return;
+    var items=[
+      {avatar:'🌸',name:'Rosie',action:'published "Morning Tea & Fog"',time:'2 hours ago'},
+      {avatar:'📚',name:'Zara',action:'joined the Dark Academia Society',time:'4 hours ago'},
+      {avatar:'🌿',name:'Mia',action:'completed the 7-Day Gratitude Streak 🌱',time:'Yesterday'},
+      {avatar:'🎀',name:'Cleo',action:'started following you',time:'Yesterday'},
+      {avatar:'💿',name:'Nora',action:'liked your blog: "The Library at Midnight"',time:'2 days ago'},
+      {avatar:'✨',name:'Iris',action:'joined Fairycore Circle',time:'2 days ago'}
+    ];
+    el.innerHTML=items.map(function(f){
+      return '<div class="feed-item"><div class="feed-avatar-emoji">'+f.avatar+'</div><div><span class="feed-name">'+f.name+'</span><span class="feed-action"> '+f.action+'</span><div class="feed-time">'+f.time+'</div></div></div>';
+    }).join('');
+  }
+
+  /* =========================================================
+     CLOSE MODALS ON OVERLAY CLICK
+     ========================================================= */
+  document.querySelectorAll('.modal-overlay').forEach(function(m){
+    m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('open'); });
+  });
+
+  /* =========================================================
+     INIT
+     ========================================================= */
+  var hr=new Date().getHours();
+  var greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  var hg=$('home-greeting'); if(hg) hg.textContent=greet+', Luna ✨';
+
+  updatePlant();
+  renderPastEntries();
+  renderFeed();
+  renderBlogs('all');
+
+});
+</script>
+</body>
+</html>
